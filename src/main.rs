@@ -15,7 +15,10 @@ fn get_token() -> String {
 #[tokio::main]
 async fn main() {
     let token = get_token();
-    let mut client = Client::builder(&token, GatewayIntents::default())
+    let intents = GatewayIntents::GUILD_MESSAGES
+        | GatewayIntents::DIRECT_MESSAGES
+        | GatewayIntents::MESSAGE_CONTENT;
+    let mut client = Client::builder(&token, intents)
         .event_handler(Handler)
         .await
         .expect("Error creating client");

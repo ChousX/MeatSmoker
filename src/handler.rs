@@ -7,7 +7,7 @@ use serenity::{
 };
 
 const HELP: &str =
-    "Why are we here?\nTO SMOKE MEATS!!!\nCommand List:\nHelp: !help\n Coin Flip: !flip";
+    "Why are we here?\nTO SMOKE MEATS!!!\nCommand List:\nHelp: !help\nCoin Flip: !flip";
 
 pub struct Handler;
 
@@ -15,19 +15,19 @@ pub struct Handler;
 impl EventHandler for Handler {
     async fn message(&self, ctx: Context, msg: Message) {
         let subject: &str = &msg.content;
+        
         if subject == "!help" {
             let response = MessageBuilder::new().push(HELP).build();
 
             if let Err(why) = msg.channel_id.say(&ctx.http, &response).await {
                 println!("Error Sending message: {:?}", why);
             }
-        }
-
+        } else
         if subject == "!flip" {
             let result = if thread_rng().gen_bool(0.5) {
-                "Heads".to_string()
+                " Heads".to_string()
             } else {
-                "Tails".to_string()
+                " Tails".to_string()
             };
 
             let response = MessageBuilder::new()
@@ -37,7 +37,7 @@ impl EventHandler for Handler {
             if let Err(why) = msg.channel_id.say(&ctx.http, &response).await {
                 println!("Error Sending message: {:?}", why);
             }
-        }
+        } else
 
         if subject == "!d20" {
             let result = thread_rng().gen_range(1..21);
@@ -49,6 +49,7 @@ impl EventHandler for Handler {
                 println!("Error Sending message: {:?}", why);
             }
         }
+      
     }
 
     async fn ready(&self, _: Context, ready: Ready) {
