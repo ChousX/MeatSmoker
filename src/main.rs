@@ -1,5 +1,5 @@
 use std::env;
-use chrono::{Utc, DateTime, TimeZone, Local};
+
 use rand::{thread_rng, Rng};
 use serenity::async_trait;
 use serenity::model::gateway::Ready;
@@ -50,7 +50,7 @@ async fn main() {
     }
 }
 #[group]
-#[commands(help, flip, d20, its5)]
+#[commands(help, flip, d20)]
 pub struct General;
 
 
