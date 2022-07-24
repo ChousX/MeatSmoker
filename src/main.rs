@@ -3,20 +3,43 @@ use std::env;
 use rand::{thread_rng, Rng};
 use serenity::async_trait;
 use serenity::model::gateway::Ready;
-use serenity::prelude::*;
-use serenity::model::channel::Message;
-use serenity::framework::standard::macros::{command, group};
-use serenity::framework::standard::{StandardFramework, CommandResult};
+use serenity::model::channel::{Message, AttachmentType};
 use serenity::utils::MessageBuilder;
-
+mod assets;
 pub struct Handler;
+use std::collections::HashMap;
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Arc;
+
+use serenity::framework::standard::macros::{command, group, hook};
+use serenity::framework::standard::{Args, CommandResult, StandardFramework};
+use serenity::prelude::*;
+use tokio::sync::RwLock;
+
+struct FBI_Helper;
+
+impl TypeMapKey for FBI_Helper {
+    type Value = Arc<RwLock<assets::boobies::BoobieIndexer>>;
+}
+
+struct BoodyHelper;
+
+impl TypeMapKey for BoodyHelper {
+    type Value = Arc<RwLock<assets::boodies::BootieIndexer>>;
+}
+
 
 #[async_trait]
 impl EventHandler for Handler {
     async fn ready(&self, _: Context, ready: Ready) {
+        
         println!("{} is connected!", ready.user.name);
     }
+    
+
 }
+
+
 
 fn get_token() -> String {
     use std::fs::File;
@@ -45,12 +68,18 @@ async fn main() {
         .await
         .expect("Error creating client");
 
+    {
+        let mut data = client.data.write().await;
+        data.insert::<FBI_Helper>(Arc::new(RwLock::new(assets::boobies::BoobieIndexer::start_up(BOOBY))));
+        data.insert::<BoodyHelper>(Arc::new(RwLock::new(assets::boodies::BootieIndexer::start_up(BOODY))));
+    }
+
     if let Err(why) = client.start().await {
         println!("Client error: {:?}", why);
     }
 }
 #[group]
-#[commands(help, flip, d20)]
+#[commands(help, flip, d20, showmeboobies, fbicertify, showmeboody, fbbcertify)]
 pub struct General;
 
 
@@ -85,12 +114,139 @@ async fn flip(ctx: &Context, msg: &Message) -> CommandResult {
 #[command]
 async fn d20(ctx: &Context, msg: &Message) -> CommandResult{
     let result = thread_rng().gen_range(1..=20);
-            let mut response = MessageBuilder::new();
-            response
-                .push_bold_safe(&msg.author.name)
-                .push(" ")
-                .push(result.to_string());
+    let mut response = MessageBuilder::new();
+    response
+        .push_bold_safe(&msg.author.name)
+        .push(" ")
+        .push(result.to_string());
     msg.reply(ctx, response.build()).await?;
     
+    Ok(())
+}
+
+
+
+
+
+const BOODY: &str = ".boodies";
+const BOOBY: &str = "./.booby";
+
+
+#[command]
+async fn showmeboody(ctx: &Context, msg: &Message) -> CommandResult{
+    //if msg.author.has_role(cache_http, guild, role) { return Ok(())}
+    
+    let  boodie_lock = {
+        let data_read = ctx.data.read().await;
+        data_read.get::<BoodyHelper>().expect("Expected MessageCount in TypeMap.").clone()
+    };
+
+    let boodies = boodie_lock.read().await;
+    if boodies.len() == 0 { return Ok(())}
+    let (image, name) = boodies.get_random_image();
+    if let Some(url) = image{
+        msg
+        .channel_id
+        .send_message(&ctx.http, |m| {
+            
+    
+            // Ping the replied user
+            m.allowed_mentions(|am| {
+                am.replied_user(true);
+                am
+            });
+    
+    
+            // Attach image
+            m.add_file(AttachmentType::Image(url));
+            m
+            
+        }).await;
+        if name != ""{
+            let mut response = MessageBuilder::new();
+            response.push_bold_safe(name);
+            msg.reply(ctx, response.build()).await?;
+        }
+    }
+    Ok(())
+}
+
+#[command]
+async fn fbbcertify(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult{
+    let  boodies_lock = {
+        let data_read = ctx.data.read().await;
+        data_read.get::<BoodyHelper>().expect("Expected MessageCount in TypeMap.").clone()
+    };
+    {
+        let url = match args.single_quoted::<String>() {
+            Ok(x) => x,
+            Err(_) => {
+                return Ok(());
+            },
+        };
+        let mut  boodie_base= boodies_lock.write().await;
+
+        boodie_base.add_boody(BOODY, &url, None, Some(msg.author.name.clone()));
+        Ok(())
+    }
+}
+
+
+#[command]
+async fn fbicertify(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult{
+    let  boobies_lock = {
+        let data_read = ctx.data.read().await;
+        data_read.get::<FBI_Helper>().expect("Expected MessageCount in TypeMap.").clone()
+    };
+    {
+        let url = match args.single_quoted::<String>() {
+            Ok(x) => x,
+            Err(_) => {
+                return Ok(());
+            },
+        };
+        let mut  boobie_base= boobies_lock.write().await;
+
+        boobie_base.add_booby(BOOBY, &url, None, Some(msg.author.name.clone()));
+        Ok(())
+    }
+}
+
+#[command]
+async fn showmeboobies(ctx: &Context, msg: &Message) -> CommandResult{
+    //if msg.author.has_role(cache_http, guild, role) { return Ok(())}
+    
+    let  boobies_lock = {
+        let data_read = ctx.data.read().await;
+        data_read.get::<FBI_Helper>().expect("Expected MessageCount in TypeMap.").clone()
+    };
+
+    let boobies = boobies_lock.read().await;
+    if boobies.len() == 0 { return Ok(())}
+    let (image, name) = boobies.get_random_image();
+    if let Some(url) = image{
+        msg
+        .channel_id
+        .send_message(&ctx.http, |m| {
+            
+    
+            // Ping the replied user
+            m.allowed_mentions(|am| {
+                am.replied_user(true);
+                am
+            });
+    
+    
+            // Attach image
+            m.add_file(AttachmentType::Image(url));
+            m
+            
+        }).await;
+        if name != ""{
+            let mut response = MessageBuilder::new();
+            response.push_bold_safe(name);
+            msg.reply(ctx, response.build()).await?;
+        }
+    }
     Ok(())
 }
