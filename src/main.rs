@@ -79,7 +79,7 @@ async fn main() {
     }
 }
 #[group]
-#[commands(help, flip, d20, showmeboobies, fbicertify, showmeboody, fbbcertify)]
+#[commands(help, flip, d20, perv, showmeboobies, fbicertify, showmeboody, fbbcertify)]
 pub struct General;
 
 
@@ -96,6 +96,8 @@ async fn help(ctx: &Context, msg: &Message) -> CommandResult {
     .push(": flips a coin\n")
     .push_bold_safe("!d20")
     .push(": rolls a d20\n")
+    .push_bold_safe("!perv")
+    .push(": shows you a list of nsfw commands please be good\n     note: if abused it will be removed\n")
     .build();
     msg.reply(ctx, response).await?;
 
@@ -248,5 +250,33 @@ async fn showmeboobies(ctx: &Context, msg: &Message) -> CommandResult{
             msg.reply(ctx, response.build()).await?;
         }
     }
+    Ok(())
+}
+
+#[command]
+async fn perv(ctx: &Context, msg: &Message) -> CommandResult{
+    let subject: &str = &msg.content;
+    let response = MessageBuilder::new()
+    //start
+    .push("This is a list of nsfw commands\n")
+    .push_bold_line_safe("Please be respectfull!")
+    //command list
+    .push_bold_line_safe("Command List:")
+    .push_bold_safe("!perv")
+    .push(": brings you here and lists of all the commands\n")
+    //boobies
+    .push_bold_safe("!showmeboobies")
+    .push(": shows you a pecture of breasts\n")
+    .push_bold_safe("!fbicertify")
+    .push(": will add a picture to breasts index (!fbicertify IMAGE-URL)\n")
+    .push("     note: submitters are recored with the image url\n")
+    //boodies
+    .push_bold_safe("!showmeboody")
+    .push(": shows you a pecture of butt\n")
+    .push_bold_safe("!fbbcertify")
+    .push(": will add a picture to boody index (!fbbcertify IMAGE-URL)\n")
+    .push("     note: submitters are recored with the image url\n")
+    .build();
+    msg.reply(ctx, response).await?;
     Ok(())
 }
